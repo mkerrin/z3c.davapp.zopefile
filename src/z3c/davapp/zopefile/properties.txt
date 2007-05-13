@@ -1,0 +1,361 @@
+============================
+zope.file webdav integration
+============================
+
+  >>> import z3c.etree
+  >>> from zope.file.file import File
+
+  >>> etree = z3c.etree.getEngine()
+
+Create a content object called `textfile.txt` in the root folder.
+
+  >>> f = File('text/plain', {'charset': 'ascii'})
+  >>> fp = f.open('w')
+  >>> fp.write('%s\n' %('x' * 10) * 5)
+  >>> fp.close()
+
+  >>> getRootFolder()['testfile.txt'] = f
+
+GET
+===
+
+The default view for the content object needs to be setup in order for WebDAV
+clients to be able to get the data for the DAV compliant resource.
+
+  >>> resp = http("""
+  ... GET /testfile.txt HTTP/1.1
+  ... """, handle_errors = False)
+  >>> resp.getStatus()
+  200
+  >>> resp.getHeader('content-type')
+  'text/plain'
+  >>> resp.getHeader('content-length')
+  '55'
+  >>> print resp.getBody()
+  xxxxxxxxxx
+  xxxxxxxxxx
+  xxxxxxxxxx
+  xxxxxxxxxx
+  xxxxxxxxxx
+
+PUT
+===
+
+???
+
+PROPFIND
+========
+
+Query the WebDAV data model for the file object. The following properties
+currently make up the data model for zope.file:
+
++ {DAV:}creationdate
+
++ {DAV:}displayname
+
++ {DAV:}getcontentlength
+
++ {DAV:}getcontenttype
+
++ {DAV:}getlastmodified
+
++ {DAV:}resourcetype
+
+Query all properties on our test file.
+
+  >>> resp = webdav("""
+  ... PROPFIND /testfile.txt HTTP/1.1
+  ... """, handle_errors = False)
+
+  >>> print resp.getBody() #doctest:+XMLDATA
+  <multistatus xmlns="DAV:">
+    <response>
+      <href>http://localhost/testfile.txt</href>
+      <propstat>
+        <prop>
+          <creationdate />
+          <displayname />
+          <getlastmodified />
+          <getcontenttype>text/plain</getcontenttype>
+          <getcontentlength>55</getcontentlength>
+          <resourcetype />
+        </prop>
+        <status>HTTP/1.1 200 OK</status>
+      </propstat>
+    </response>
+  </multistatus>
+
+The `{DAV:}getetag` and `{DAV:}getcontentlanguage` properties are not defined
+(yet) on a file object.
+
+  >>> resp.getMSProperty('http://localhost/testfile.txt', '{DAV:}getetag')
+  Traceback (most recent call last):
+  ...
+  KeyError: "'{DAV:}getetag' property not found for resource http://localhost/testfile.txt (200)"
+  >>> resp.getMSProperty(
+  ...    'http://localhost/testfile.txt', '{DAV:}getcontentlanguage')
+  Traceback (most recent call last):
+  ...
+  KeyError: "'{DAV:}getcontentlanguage' property not found for resource http://localhost/testfile.txt (200)"
+
+PROPPATCH
+=========
+
+We need to be logged in to update a property.
+
+  >>> reqbody = """<propertyupdate xmlns="DAV:">
+  ...  <set>
+  ...   <prop>
+  ...    <displayname>Test title</displayname>
+  ...   </prop>
+  ...  </set>
+  ... </propertyupdate>"""
+  >>> resp = webdav("""
+  ... PROPPATCH /testfile.txt HTTP/1.1
+  ... Content-Type: application/xml
+  ... Content-Length: %d
+  ...
+  ... %s""" %(len(reqbody), reqbody))
+  >>> resp.getStatus()
+  401
+
+Now update the title of the file.
+
+  >>> resp = webdav("""
+  ... PROPPATCH /testfile.txt HTTP/1.1
+  ... Authorization: Basic mgr:mgrpw
+  ... Content-Type: application/xml
+  ... Content-Length: %d
+  ...
+  ... %s""" %(len(reqbody), reqbody), handle_errors = False)
+  >>> resp.getStatus()
+  207
+  >>> resp.getHeader('content-type')
+  'application/xml'
+  >>> print resp.getBody() #doctest:+XMLDATA
+  <multistatus xmlns="DAV:">
+    <response>
+      <href>http://localhost/testfile.txt</href>
+      <propstat>
+        <prop>
+          <displayname />
+        </prop>
+        <status>HTTP/1.1 200 OK</status>
+      </propstat>
+    </response>
+  </multistatus>
+
+Retrieve the displayname property using PROPFIND and notice the difference.
+
+  >>> reqbody = """<propfind xmlns="DAV:">
+  ...   <prop>
+  ...     <displayname />
+  ...   </prop>
+  ... </propfind>
+  ... """
+  >>> resp = webdav("""
+  ... PROPFIND /testfile.txt HTTP/1.1
+  ... Content-type: application/xml
+  ... Content-Length: %d
+  ...
+  ... %s""" %(len(reqbody), reqbody), handle_errors = False)
+  >>> resp.getStatus()
+  207
+  >>> resp.getHeader('content-type')
+  'application/xml'
+  >>> print resp.getBody() #doctest:+XMLDATA
+  <multistatus xmlns="DAV:">
+    <response>
+      <href>http://localhost/testfile.txt</href>
+      <propstat>
+        <prop>
+          <displayname>Test title</displayname>
+        </prop>
+        <status>HTTP/1.1 200 OK</status>
+      </propstat>
+    </response>
+  </multistatus>
+
+The `{DAV:}getcontentlength` property is a live property, and as such we
+cannot modify it.
+
+  >>> reqbody = """<propertyupdate xmlns="DAV:">
+  ...   <set>
+  ...     <prop>
+  ...       <getcontentlength>24</getcontentlength>
+  ...     </prop>
+  ...   </set>
+  ... </propertyupdate>"""
+  >>> resp = webdav("""
+  ... PROPPATCH /testfile.txt HTTP/1.1
+  ... Authorization: Basic mgr:mgrpw
+  ... Content-type: application/xml 
+  ... Content-length: %d
+  ...
+  ... %s""" %(len(reqbody), reqbody))
+  >>> resp.getStatus()
+  207
+  >>> resp.getHeader('content-type')
+  'application/xml'
+  >>> print resp.getBody() #doctest:+XMLDATA
+  <multistatus xmlns="DAV:">
+    <response>
+      <href>http://localhost/testfile.txt</href>
+      <propstat>
+        <prop>
+          <getcontentlength />
+        </prop>
+        <status>HTTP/1.1 403 Forbidden</status>
+      </propstat>
+    </response>
+  </multistatus>
+
+Opaque properties
+=================
+
+Set two dead properties on our resource.
+
+  >>> reqbody = """<propertyupdate xmlns="DAV:">
+  ...  <set>
+  ...    <prop>
+  ...      <E:prop1 xmlns:E="examplens:">PROPERTY 1</E:prop1>
+  ...      <E:prop2 xmlns:E="examplens:">PROPERTY 2</E:prop2>
+  ...    </prop>
+  ...  </set>
+  ... </propertyupdate>
+  ... """
+  >>> resp = webdav("""
+  ... PROPPATCH /testfile.txt HTTP/1.1
+  ... Authorization: Basic mgr:mgrpw
+  ... Content-type: application/xml
+  ... Content-length: %d
+  ...
+  ... %s""" %(len(reqbody), reqbody), handle_errors = True)
+
+  >>> resp.getStatus()
+  207
+  >>> resp.getHeader('content-type')
+  'application/xml'
+  >>> print resp.getBody() #doctest:+XMLDATA
+  <multistatus xmlns="DAV:">
+    <response>
+      <href>http://localhost/testfile.txt</href>
+      <propstat>
+        <prop>
+          <ns1:prop1 xmlns:ns1="examplens:" />
+          <ns1:prop2 xmlns:ns1="examplens:" />
+        </prop>
+        <status>HTTP/1.1 200 OK</status>
+      </propstat>
+    </response>
+  </multistatus>
+
+Query these new properties.
+
+  >>> reqbody = """<propfind xmlns="DAV:">
+  ...  <prop xmlns:E="examplens:" >
+  ...    <E:prop1 />
+  ...    <E:prop2 />
+  ...  </prop>
+  ... </propfind>
+  ... """
+  >>> resp = webdav("""
+  ... PROPFIND /testfile.txt HTTP/1.1
+  ... Content-type: application/xml
+  ... Content-length: %d
+  ...
+  ... %s""" %(len(reqbody), reqbody))
+  >>> resp.getStatus()
+  207
+  >>> resp.getHeader('content-type')
+  'application/xml'
+  >>> print resp.getBody() #doctest:+XMLDATA
+  <multistatus xmlns="DAV:">
+    <response>
+      <href>http://localhost/testfile.txt</href>
+      <propstat>
+        <prop>
+          <E:prop1 xmlns:E="examplens:">PROPERTY 1</E:prop1>
+          <E:prop2 xmlns:E="examplens:">PROPERTY 2</E:prop2>
+        </prop>
+        <status>HTTP/1.1 200 OK</status>
+      </propstat>
+    </response>
+  </multistatus>
+
+Update the first property and remove the second.
+
+  >>> reqbody = """<propertyupdate xmlns="DAV:">
+  ...  <set>
+  ...    <prop>
+  ...      <E:prop1 xmlns:E="examplens:">Only opaque property</E:prop1>
+  ...    </prop>
+  ...  </set>
+  ...  <remove>
+  ...    <prop>
+  ...      <E:prop2 xmlns:E="examplens:" />
+  ...    </prop>
+  ...  </remove>
+  ... </propertyupdate>"""
+  >>> resp = webdav("""
+  ... PROPPATCH /testfile.txt HTTP/1.1
+  ... Authorization: Basic mgr:mgrpw
+  ... Content-type: application/xml
+  ... Content-length: %d
+  ...
+  ... %s""" %(len(reqbody), reqbody))
+  >>> resp.getStatus()
+  207
+  >>> resp.getHeader('content-type')
+  'application/xml'
+  >>> print resp.getBody() #doctest:+XMLDATA
+  <multistatus xmlns="DAV:">
+    <response>
+      <href>http://localhost/testfile.txt</href>
+      <propstat>
+        <prop>
+          <E:prop1 xmlns:E="examplens:" />
+          <E:prop2 xmlns:E="examplens:" />
+        </prop>
+        <status>HTTP/1.1 200 OK</status>
+      </propstat>
+    </response>
+  </multistatus>
+
+Now check that the opaque properties were updated successfully.
+
+  >>> reqbody = """<propfind xmlns="DAV:">
+  ...  <prop xmlns:E="examplens:" >
+  ...    <E:prop1 />
+  ...    <E:prop2 />
+  ...  </prop>
+  ... </propfind>
+  ... """
+  >>> resp = webdav("""
+  ... PROPFIND /testfile.txt HTTP/1.1
+  ... Content-type: application/xml
+  ... Content-length: %d
+  ...
+  ... %s""" %(len(reqbody), reqbody))
+  >>> resp.getStatus()
+  207
+  >>> resp.getHeader('content-type')
+  'application/xml'
+  >>> print resp.getBody() #doctest:+XMLDATA
+  <multistatus xmlns="DAV:">
+    <response>
+      <href>http://localhost/testfile.txt</href>
+      <propstat>
+        <prop>
+          <ns1:prop1 xmlns:ns1="examplens:">Only opaque property</ns1:prop1>
+        </prop>
+        <status>HTTP/1.1 200 OK</status>
+      </propstat>
+      <propstat>
+        <prop>
+          <ns1:prop2 xmlns:ns1="examplens:" />
+        </prop>
+        <status>HTTP/1.1 404 Not Found</status>
+      </propstat>
+    </response>
+  </multistatus>
