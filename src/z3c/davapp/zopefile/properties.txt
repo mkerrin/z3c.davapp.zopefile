@@ -80,7 +80,7 @@ Query all properties on our test file.
           <getcontentlength>55</getcontentlength>
           <resourcetype />
         </prop>
-        <status>HTTP/1.1 200 OK</status>
+        <status>HTTP/1.1 200 Ok</status>
       </propstat>
     </response>
   </multistatus>
@@ -140,7 +140,7 @@ Now update the title of the file.
         <prop>
           <displayname />
         </prop>
-        <status>HTTP/1.1 200 OK</status>
+        <status>HTTP/1.1 200 Ok</status>
       </propstat>
     </response>
   </multistatus>
@@ -171,7 +171,7 @@ Retrieve the displayname property using PROPFIND and notice the difference.
         <prop>
           <displayname>Test title</displayname>
         </prop>
-        <status>HTTP/1.1 200 OK</status>
+        <status>HTTP/1.1 200 Ok</status>
       </propstat>
     </response>
   </multistatus>
@@ -245,7 +245,7 @@ Set two dead properties on our resource.
           <ns1:prop1 xmlns:ns1="examplens:" />
           <ns1:prop2 xmlns:ns1="examplens:" />
         </prop>
-        <status>HTTP/1.1 200 OK</status>
+        <status>HTTP/1.1 200 Ok</status>
       </propstat>
     </response>
   </multistatus>
@@ -278,7 +278,7 @@ Query these new properties.
           <E:prop1 xmlns:E="examplens:">PROPERTY 1</E:prop1>
           <E:prop2 xmlns:E="examplens:">PROPERTY 2</E:prop2>
         </prop>
-        <status>HTTP/1.1 200 OK</status>
+        <status>HTTP/1.1 200 Ok</status>
       </propstat>
     </response>
   </multistatus>
@@ -317,7 +317,7 @@ Update the first property and remove the second.
           <E:prop1 xmlns:E="examplens:" />
           <E:prop2 xmlns:E="examplens:" />
         </prop>
-        <status>HTTP/1.1 200 OK</status>
+        <status>HTTP/1.1 200 Ok</status>
       </propstat>
     </response>
   </multistatus>
@@ -349,7 +349,7 @@ Now check that the opaque properties were updated successfully.
         <prop>
           <ns1:prop1 xmlns:ns1="examplens:">Only opaque property</ns1:prop1>
         </prop>
-        <status>HTTP/1.1 200 OK</status>
+        <status>HTTP/1.1 200 Ok</status>
       </propstat>
       <propstat>
         <prop>
