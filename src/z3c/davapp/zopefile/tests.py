@@ -2,6 +2,8 @@ import os
 import unittest
 from zope.testing import doctest
 
+import zope.file.testing
+
 import z3c.etree.testing
 import z3c.dav.testing
 
@@ -11,7 +13,7 @@ ZopeFileDAVLayer = z3c.dav.testing.WebDAVLayerClass(
 
 
 def test_suite():
-    properties = doctest.DocFileSuite(
+    properties = zope.file.testing.FunctionalBlobDocFileSuite(
         "properties.txt",
         setUp = z3c.dav.testing.functionalSetUp,
         tearDown = z3c.dav.testing.functionalTearDown,
