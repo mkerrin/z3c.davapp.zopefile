@@ -1,12 +1,22 @@
 from setuptools import setup, find_packages
 
 setup(name = "z3c.davapp.zopefile",
-      version = "0.9",
+      version = "1.0b",
       author = "Michael Kerrin",
       author_email = "michael.kerrin@openapp.ie",
       url = "http://launchpad.net/z3c.dav",
-      description = "WebDAV support for zope.file content objects",
+      description = open("README.txt").read(),
+      long_description = (
+          open("src/z3c/davapp/zopefile/properties.txt").read() +
+          "\n\n" +
+          open("CHANGES.txt").read()),
       license = "ZPL",
+      classifiers = ["Environment :: Web Environment",
+                     "Intended Audience :: Developers",
+                     "License :: OSI Approved :: Zope Public License",
+                     "Programming Language :: Python",
+                     "Framework :: Zope3",
+                     ],
 
       packages = find_packages("src"),
       package_dir = {"": "src"},
