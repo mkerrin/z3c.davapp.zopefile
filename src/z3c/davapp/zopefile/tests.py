@@ -20,8 +20,17 @@ def test_suite():
         checker = z3c.etree.testing.xmlOutputChecker,
         optionflags = doctest.REPORT_NDIFF | doctest.NORMALIZE_WHITESPACE)
     properties.layer = ZopeFileDAVLayer
+
+    defaultview = zope.file.testing.FunctionalBlobDocFileSuite(
+        "defaultview.txt",
+        setUp = z3c.dav.testing.functionalSetUp,
+        tearDown = z3c.dav.testing.functionalTearDown,
+        checker = z3c.etree.testing.xmlOutputChecker,
+        optionflags = doctest.REPORT_NDIFF | doctest.NORMALIZE_WHITESPACE)
+    defaultview.layer = ZopeFileDAVLayer
                                       
     return unittest.TestSuite((
         doctest.DocTestSuite("z3c.davapp.zopefile"),
         properties,
+        defaultview,
         ))

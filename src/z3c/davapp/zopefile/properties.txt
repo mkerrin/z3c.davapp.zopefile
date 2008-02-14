@@ -3,6 +3,8 @@ zope.file webdav integration
 ============================
 
   >>> import z3c.etree
+  >>> import zope.event
+  >>> from zope.lifecycleevent import ObjectCreatedEvent
   >>> from zope.file.file import File
 
   >>> etree = z3c.etree.getEngine()
@@ -14,34 +16,11 @@ Create a content object called `textfile.txt` in the root folder.
   >>> fp.write('%s\n' %('x' * 10) * 5)
   >>> fp.close()
 
+Emit the `CreateObjectEvent' to generate lastmodified and created dates.
+
+  >>> zope.event.notify(ObjectCreatedEvent(f))
   >>> getRootFolder()['testfile.txt'] = f
 
-GET
-===
-
-The default view for the content object needs to be setup in order for WebDAV
-clients to be able to get the data for the DAV compliant resource.
-
-  >>> resp = http("""
-  ... GET /testfile.txt HTTP/1.1
-  ... """, handle_errors = False)
-  >>> resp.getStatus()
-  200
-  >>> resp.getHeader('content-type')
-  'text/plain'
-  >>> resp.getHeader('content-length')
-  '55'
-  >>> print resp.getBody()
-  xxxxxxxxxx
-  xxxxxxxxxx
-  xxxxxxxxxx
-  xxxxxxxxxx
-  xxxxxxxxxx
-
-PUT
-===
-
-???
 
 PROPFIND
 ========
@@ -67,15 +46,15 @@ Query all properties on our test file.
   ... PROPFIND /testfile.txt HTTP/1.1
   ... """, handle_errors = False)
 
-  >>> print resp.getBody() #doctest:+XMLDATA
+  >>> print resp.getBody() #doctest:+XMLDATA,+ELLIPSIS
   <multistatus xmlns="DAV:">
     <response>
       <href>http://localhost/testfile.txt</href>
       <propstat>
         <prop>
-          <creationdate />
+          <creationdate>...</creationdate>
           <displayname />
-          <getlastmodified />
+          <getlastmodified>...</getlastmodified>
           <getcontenttype>text/plain</getcontenttype>
           <getcontentlength>55</getcontentlength>
           <resourcetype />
@@ -209,6 +188,7 @@ cannot modify it.
       </propstat>
     </response>
   </multistatus>
+
 
 Opaque properties
 =================

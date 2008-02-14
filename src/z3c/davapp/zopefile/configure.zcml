@@ -1,41 +1,7 @@
-<configure xmlns="http://namespaces.zope.org/zope"
-           xmlns:browser="http://namespaces.zope.org/browser">
+<configure>
 
-  <adapter
-      for="zope.file.interfaces.IFile
-           zope.publisher.interfaces.http.IHTTPRequest"
-      factory="z3c.dav.adapters.DAVDublinCore"
-      />
+  <include package="z3c.davapp.zopefile" file="properties.zcml" />
 
-  <adapter
-      for="zope.file.interfaces.IFile"
-      factory="z3c.dav.adapters.OpaqueProperties"
-      trusted="1"
-      />
-
-  <adapter
-      for="zope.file.interfaces.IFile
-           zope.publisher.interfaces.http.IHTTPRequest"
-      provides="z3c.dav.coreproperties.IDAVGetcontenttype"
-      factory=".FileDAVSchema"
-      />
-
-  <adapter
-      for="zope.file.interfaces.IFile
-           zope.publisher.interfaces.http.IHTTPRequest"
-      provides="z3c.dav.coreproperties.IDAVGetcontentlength"
-      factory=".FileDAVSchema"
-      />
-
-  <!--
-      Default view
-  -->
-  <browser:view
-      for="zope.file.interfaces.IFile"
-      name="index.html"
-      class="zope.file.download.Display"
-      permission="zope.View"
-      layer="zope.publisher.interfaces.browser.IBrowserRequest"
-      />
+  <include package="z3c.davapp.zopefile" file="defaultview.zcml" />
 
 </configure>

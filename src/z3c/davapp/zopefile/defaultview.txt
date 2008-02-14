@@ -1,0 +1,86 @@
+=================
+Default file view
+=================
+
+The default view for the content object needs to be setup in order for WebDAV
+clients to be able to get the data for the DAV compliant resource. For example
+if we have a file called `testfile.txt' in the root folder then the URL
+`http://localhost/testfile.txt' should return the contents of the file. By
+convention the default view is called `index.html' but if this is not
+the case then you will have to re-configure the view to have your default
+view name.
+
+Setup
+-----
+
+  >>> import zope.event
+  >>> import zope.datetime
+  >>> from zope.dublincore.interfaces import IZopeDublinCore
+  >>> from zope.lifecycleevent import ObjectCreatedEvent
+  >>> from zope.file.file import File
+
+Create a content object called `textfile.txt` in the root folder.
+
+  >>> f = File('text/plain', {'charset': 'ascii'})
+  >>> fp = f.open('w')
+  >>> fp.write('%s\n' %('x' * 10) * 5)
+  >>> fp.close()
+
+Emit the `CreateObjectEvent' to generate `modified' and `created' dates.
+
+  >>> zope.event.notify(ObjectCreatedEvent(f))
+
+  >>> getRootFolder()['testfile.txt'] = f
+
+GET
+===
+
+We need to be logged in access the `testfile.txt' resource. I think this is an
+issue with the current permissions defined in `zope.file'.
+
+  >>> resp = http("""
+  ... GET /testfile.txt HTTP/1.1
+  ... """, handle_errors = True)
+  >>> resp.getStatus()
+  401
+
+Log in as the site manager so that we can get the contents.
+
+  >>> resp = http("""
+  ... GET /testfile.txt HTTP/1.1
+  ... Authorization: Basic mgr:mgrpw
+  ... """)
+  >>> resp.getStatus()
+  200
+  >>> resp.getHeader('content-type')
+  'text/plain'
+  >>> resp.getHeader('content-length')
+  '55'
+  >>> print resp.getBody()
+  xxxxxxxxxx
+  xxxxxxxxxx
+  xxxxxxxxxx
+  xxxxxxxxxx
+  xxxxxxxxxx
+
+Since we have define the view I have integrated it with the
+`z3c.conditionalviews' module which can validate most of the HTTP conditional
+requests.
+
+  >>> lmd = resp.getHeader('Last-modified')
+  >>> lmd is not None
+  True
+  >>> lmd_value = long(zope.datetime.time(lmd))
+
+  >>> resp = http("""
+  ... GET /testfile.txt HTTP/1.1
+  ... If-Modified-Since: %s
+  ... Authorization: Basic mgr:mgrpw
+  ... """ % zope.datetime.rfc1123_date(lmd_value + 60))
+  >>> resp.getStatus()
+  304
+
+PUT
+===
+
+???

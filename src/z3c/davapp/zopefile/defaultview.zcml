@@ -1,0 +1,28 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:browser="http://namespaces.zope.org/browser">
+
+  <!--
+      `index.html' is usually the default file name.
+
+      `zope.file' doesn't define a default view of a file object so we will
+      define it here. WebDAV requires that the default view be defined. Note
+      that this declaration can be easily overriden since the adapter is
+      registered against `zope.publisher.interfaces.browser.IBrowserRequest'
+      components.
+  -->
+  <browser:view
+      for="zope.file.interfaces.IFile"
+      name="index.html"
+      class=".Display"
+      permission="zope.View"
+      layer="zope.publisher.interfaces.browser.IBrowserRequest"
+      />
+
+  <adapter
+      for="zope.file.interfaces.IFile
+           zope.publisher.interfaces.browser.IBrowserRequest
+           .Display"
+      factory="z3c.conditionalviews.adapters.LastModificationDate"
+      />
+
+</configure>

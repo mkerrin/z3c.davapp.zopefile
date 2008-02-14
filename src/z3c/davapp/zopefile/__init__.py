@@ -1,9 +1,10 @@
 import zope.interface
 import zope.component
+import zope.file.download
 import zope.file.interfaces
 
+import z3c.conditionalviews
 import z3c.dav.coreproperties
-
 
 class FileDAVSchema(object):
     """
@@ -42,3 +43,15 @@ class FileDAVSchema(object):
     @property
     def getcontenttype(self):
         return self.context.mimeType
+
+###############################################################################
+#
+# Define default view of the file object.
+#
+###############################################################################
+
+class Display(zope.file.download.Display):
+
+    @z3c.conditionalviews.ConditionalView
+    def __call__(self):
+        return super(Display, self).__call__()
