@@ -26,7 +26,6 @@ setup(name = "z3c.davapp.zopefile",
                           "z3c.conditionalviews",
                           "zope.file",
                           ],
-      extras_require = dict(test = ["cElementTree"]),
 
       include_package_data = True,
       zip_safe = False)

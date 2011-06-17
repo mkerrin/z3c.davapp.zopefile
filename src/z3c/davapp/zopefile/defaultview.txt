@@ -35,20 +35,11 @@ Emit the `CreateObjectEvent' to generate `modified' and `created' dates.
 GET
 ===
 
-We need to be logged in access the `testfile.txt' resource. I think this is an
-issue with the current permissions defined in `zope.file'.
+Get the contents of the file. Not that in the past we needed to login as the
+site manager in order to get around permissions defined in `zope.file'.
 
   >>> resp = http("""
   ... GET /testfile.txt HTTP/1.1
-  ... """, handle_errors = True)
-  >>> resp.getStatus()
-  401
-
-Log in as the site manager so that we can get the contents.
-
-  >>> resp = http("""
-  ... GET /testfile.txt HTTP/1.1
-  ... Authorization: Basic mgr:mgrpw
   ... """)
   >>> resp.getStatus()
   200
