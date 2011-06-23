@@ -10,6 +10,12 @@
       registered against `zope.publisher.interfaces.browser.IBrowserRequest'
       components.
   -->
+  <browser:defaultView
+     for="zope.file.interfaces.IFile"
+     layer="zope.publisher.interfaces.browser.IBrowserRequest"
+     name="index.html"
+     />
+
   <browser:view
       for="zope.file.interfaces.IFile"
       name="index.html"

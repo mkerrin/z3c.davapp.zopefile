@@ -1,6 +1,6 @@
 import os
 import unittest
-from zope.testing import doctest
+import doctest
 
 import zope.file.testing
 
