@@ -30,8 +30,4 @@
       factory=".DAVETag"
       />
 
-  <adapter
-      factory=".ETag"
-      />
-
 </configure>

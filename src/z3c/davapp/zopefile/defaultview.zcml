@@ -31,4 +31,8 @@
       factory="z3c.conditionalviews.adapters.LastModificationDate"
       />
 
+  <adapter
+      factory=".ETag"
+      />
+
 </configure>

@@ -43,16 +43,22 @@ site manager in order to get around permissions defined in `zope.file'.
   ... """)
   >>> resp.getStatus()
   200
+
   >>> resp.getHeader('content-type')
   'text/plain'
+
   >>> resp.getHeader('content-length')
   '55'
+
   >>> print resp.getBody()
   xxxxxxxxxx
   xxxxxxxxxx
   xxxxxxxxxx
   xxxxxxxxxx
   xxxxxxxxxx
+
+  >>> resp.getHeader('etag')
+  '"414710c6f007efca86b85caf73ab9167"'
 
 Since we have define the view I have integrated it with the
 `z3c.conditionalviews' module which can validate most of the HTTP conditional
