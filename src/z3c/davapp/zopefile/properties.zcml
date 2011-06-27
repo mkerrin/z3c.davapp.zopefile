@@ -26,4 +26,12 @@
       factory=".FileDAVSchema"
       />
 
+  <adapter
+      factory=".DAVETag"
+      />
+
+  <adapter
+      factory=".ETag"
+      />
+
 </configure>

@@ -58,6 +58,7 @@ Query all properties on our test file.
           <getcontenttype>text/plain</getcontenttype>
           <getcontentlength>55</getcontentlength>
           <resourcetype />
+          <getetag>414710c6f007efca86b85caf73ab9167</getetag>
         </prop>
         <status>HTTP/1.1 200 Ok</status>
       </propstat>
@@ -67,10 +68,6 @@ Query all properties on our test file.
 The `{DAV:}getetag` and `{DAV:}getcontentlanguage` properties are not defined
 (yet) on a file object.
 
-  >>> resp.getMSProperty('http://localhost/testfile.txt', '{DAV:}getetag')
-  Traceback (most recent call last):
-  ...
-  KeyError: "'{DAV:}getetag' property not found for resource http://localhost/testfile.txt (200)"
   >>> resp.getMSProperty(
   ...    'http://localhost/testfile.txt', '{DAV:}getcontentlanguage')
   Traceback (most recent call last):
