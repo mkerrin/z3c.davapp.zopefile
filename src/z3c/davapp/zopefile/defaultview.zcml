@@ -35,4 +35,8 @@
       factory=".ETag"
       />
 
+  <adapter
+      factory=".FileFactory"
+      />
+
 </configure>

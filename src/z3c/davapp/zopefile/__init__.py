@@ -2,20 +2,23 @@ import hashlib
 
 import zope.interface
 import zope.component
+import zope.file.file
 import zope.file.download
 import zope.file.interfaces
 import zope.browser.interfaces
 from zope.security.proxy import removeSecurityProxy
+
+import zope.container.interfaces
+import zope.filerepresentation.interfaces
 
 import z3c.conditionalviews
 import z3c.dav.coreproperties
 
 class FileDAVSchema(object):
     """
-      >>> from zope.file.file import File
       >>> from zope.interface.verify import verifyObject
 
-      >>> f = File('text/plain', {'charset': 'ascii'})
+      >>> f = zope.file.file.File('text/plain', {'charset': 'ascii'})
       >>> fp = f.open('w')
       >>> fp.write('y' * 20)
       >>> fp.close()
@@ -62,6 +65,35 @@ class Display(zope.file.download.Display):
 
 ################################################################################
 #
+# Define a FileFactory to make PUT work.
+#
+################################################################################
+
+class FileFactory(object):
+    """
+
+      >>> f = FileFactory(None)
+      >>> file = f('test', 'application/data', 'xxxxxxxxxx')
+      >>> file.mimeType
+      'application/data'
+      >>> file.open('r').read()
+      'xxxxxxxxxx'
+
+    """
+    zope.interface.implements(zope.filerepresentation.interfaces.IFileFactory)
+    zope.component.adapts(zope.container.interfaces.IContainer)
+
+    def __init__(self, container):
+        pass
+
+    def __call__(self, name, content_type, data):
+        f = zope.file.file.File(mimeType = content_type)
+        f.open("w").write(data)
+
+        return f
+
+################################################################################
+#
 # A slow but valid etag data source.
 #
 ################################################################################
@@ -80,10 +112,9 @@ def getetag(context):
 
 class ETag(object):
     """
-      >>> from zope.file.file import File
       >>> from zope.interface.verify import verifyObject
 
-      >>> f = File('text/plain', {'charset': 'ascii'})
+      >>> f = zope.file.file.File('text/plain', {'charset': 'ascii'})
       >>> fp = f.open('w')
       >>> fp.write('y' * 20)
       >>> fp.close()
@@ -116,10 +147,9 @@ class ETag(object):
 
 class DAVETag(object):
     """
-      >>> from zope.file.file import File
       >>> from zope.interface.verify import verifyObject
 
-      >>> f = File('text/plain', {'charset': 'ascii'})
+      >>> f = zope.file.file.File('text/plain', {'charset': 'ascii'})
       >>> fp = f.open('w')
       >>> fp.write('y' * 20)
       >>> fp.close()
