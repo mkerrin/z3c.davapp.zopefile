@@ -143,33 +143,3 @@ class ETag(object):
     @property
     def etag(self):
         return getetag(self.context)
-
-
-class DAVETag(object):
-    """
-      >>> from zope.interface.verify import verifyObject
-
-      >>> f = zope.file.file.File('text/plain', {'charset': 'ascii'})
-      >>> fp = f.open('w')
-      >>> fp.write('y' * 20)
-      >>> fp.close()
-
-      >>> adapter = DAVETag(f, None) # request not needed
-
-      >>> verifyObject(z3c.dav.coreproperties.IDAVGetetag, adapter)
-      True
-      >>> adapter.getetag
-      'abc161961f913fc9f32975a02320f6f9'
-
-    """
-    zope.interface.implements(z3c.dav.coreproperties.IDAVGetetag)
-    zope.component.adapts(
-        zope.file.interfaces.IFile,
-        zope.publisher.interfaces.http.IHTTPRequest)
-
-    def __init__(self, context, request):
-        self.context = context
-
-    @property
-    def getetag(self):
-        return getetag(self.context)
