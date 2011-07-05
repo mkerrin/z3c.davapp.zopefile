@@ -21,10 +21,12 @@ setup(name = "z3c.davapp.zopefile",
       packages = find_packages("src"),
       package_dir = {"": "src"},
       namespace_packages = ["z3c", "z3c.davapp"],
+
       install_requires = ["setuptools",
                           "z3c.dav",
                           "z3c.conditionalviews",
                           "zope.file",
+                          "zope.app.component",
                           ],
 
       include_package_data = True,
