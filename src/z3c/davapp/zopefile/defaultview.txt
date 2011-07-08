@@ -38,8 +38,7 @@ GET
 Get the contents of the file. Not that in the past we needed to login as the
 site manager in order to get around permissions defined in `zope.file'.
 
-  >>> resp = http("""
-  ... GET /testfile.txt HTTP/1.1
+  >>> resp = http("""GET /testfile.txt HTTP/1.1
   ... """)
   >>> resp.getStatus()
   200
@@ -69,8 +68,7 @@ requests.
   True
   >>> lmd_value = long(zope.datetime.time(lmd))
 
-  >>> resp = http("""
-  ... GET /testfile.txt HTTP/1.1
+  >>> resp = http("""GET /testfile.txt HTTP/1.1
   ... If-Modified-Since: %s
   ... Authorization: Basic mgr:mgrpw
   ... """ % zope.datetime.rfc1123_date(lmd_value + 60))
