@@ -24,10 +24,13 @@ setup(name = "z3c.davapp.zopefile",
 
       install_requires = ["setuptools",
                           "z3c.dav",
-                          "z3c.conditionalviews",
                           "zope.file",
-                          "zope.app.component",
                           ],
+
+      extras_require = dict(
+          test = ["zope.app.component",
+                  ],
+          ),
 
       include_package_data = True,
       zip_safe = False)
